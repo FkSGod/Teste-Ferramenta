@@ -1,54 +1,42 @@
+using System;
+using System.Threading.Tasks;
 using Microsoft.Playwright;
+using FacebookAutomation.Modules;
 
 class Program
 {
-    public static async Task Main()
+    static async Task Main(string[] args)
     {
-        // Inicializa Playwright
-        using var playwright = await Playwright.CreateAsync();
+        // Credenciais (educacional)
+        string email = "bethercallsaul@gmail.com";
+        string senha = "08930893Ju";
 
-        // Abre o navegador Chromium
-        var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+        using var playwright = await Playwright.CreateAsync();
+        var browser = await playwright.Firefox.LaunchAsync(new BrowserTypeLaunchOptions
         {
-            Headless = false, // Deixe "false" para ver o navegador e fazer login
-            Args = new[] { "--disable-blink-features=AutomationControlled" }
+            Headless = false
         });
 
-        // Cria um novo contexto (janela anônima com cookies separados)
         var context = await browser.NewContextAsync();
-
-        // Cria uma nova aba
         var page = await context.NewPageAsync();
 
-        // Injeta JS para "camuflar" o navegador automatizado
+        // Stealth básico
         await page.AddInitScriptAsync("Object.defineProperty(navigator, 'webdriver', { get: () => undefined });");
 
-        // Vai para a página do Facebook
-        await page.GotoAsync("https://www.facebook.com");
+        // Login
+        Console.WriteLine("Fazendo login...");
+        await LoginModule.LoginAsync(page, email, senha);
+        Console.WriteLine("Login feito!");
 
-        // Espera o usuário logar manualmente
-        Console.WriteLine("🔐 Faça login manualmente e pressione ENTER aqui no console...");
-        Console.ReadLine();
+        //Entrar nos Grupos
+        Console.WriteLine("Entrando nos Grupos!");
 
-        // Espera o feed aparecer na tela
-        await page.WaitForSelectorAsync("div[role='feed']");
 
-        Console.WriteLine("📃 Extraindo textos do feed...");
+        // Scrape
+        Console.WriteLine("Extraindo posts...");
+        var posts = await ScraperModule.ScrapePostsAsync(page);
+        Console.WriteLine($"Extraídos {posts.Count} posts.");
 
-        // Seleciona os posts com texto do feed
-        var posts = await page.QuerySelectorAllAsync("div[role='feed'] div[data-ad-preview='message']");
-
-        int count = 1;
-        foreach (var post in posts)
-        {
-            var text = await post.InnerTextAsync();
-            Console.WriteLine($"\n📌 Post {count++}:\n{text}\n---------------------");
-        }
-
-        Console.WriteLine("✅ Extração finalizada. Pressione ENTER para sair.");
-        Console.ReadLine();
-
-        // Fecha o navegador
         await browser.CloseAsync();
     }
 }
