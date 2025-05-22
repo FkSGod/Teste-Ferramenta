@@ -20,7 +20,7 @@ namespace FacebookAutomation.Modules
             await page.ClickAsync("button[name='login']");
 
             // Espera o feed carregar
-            await page.WaitForSelectorAsync("div[role='feed']");
+            await page.WaitForSelectorAsync("");
 
         }
     }
