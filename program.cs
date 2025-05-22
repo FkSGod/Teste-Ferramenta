@@ -30,7 +30,7 @@ class Program
 
         //Entrar nos Grupos
         Console.WriteLine("Entrando nos Grupos!");
-
+        await GroupModule.JoinGroupsAsync(page, href);
 
         // Scrape
         Console.WriteLine("Extraindo posts...");
